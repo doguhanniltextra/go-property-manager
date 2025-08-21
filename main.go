@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
-	"os"
 
 	"github.com/doguhanniltextra/property_go/database"
-	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+
+	"os"
 )
 
 type DatabaseC struct {
@@ -15,25 +15,35 @@ type DatabaseC struct {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	fmt.Println("Environment variables loaded from .env:")
-	fmt.Println("DB_HOST:", os.Getenv("DB_HOST"))
-	fmt.Println("DB_USER:", os.Getenv("DB_USER"))
-	fmt.Println("DB_NAME:", os.Getenv("DB_NAME"))
-	fmt.Println("DB_PORT:", os.Getenv("DB_PORT"))
-	// Şifreyi güvenlik için gösterme
-	fmt.Println("DB_PASSWORD: [HIDDEN]")
+	loggerInit()
+	databaseVariables()
 
 	db, err := database.Connection()
 	if err != nil {
-		log.Fatalf("Database connection failed: %v", err)
+		logrus.Infoln("Database connection failed: ", err)
 	}
+
 	defer db.Close()
+}
 
-	fmt.Println("Connection verified, now you can run queries.")
+func loggerInit() {
+	log.SetLevel(log.InfoLevel)
 
+	log.SetFormatter(&log.TextFormatter{
+		ForceColors:      true,
+		DisableTimestamp: true,
+		PadLevelText:     true,
+		ForceQuote:       true,
+	})
+
+}
+
+func databaseVariables() {
+	logrus.Infoln("Environment variables loaded from .env:")
+	logrus.Infoln("DB_HOST:", os.Getenv("DB_HOST"))
+	logrus.Infoln("DB_USER:", os.Getenv("DB_USER"))
+	logrus.Infoln("DB_NAME:", os.Getenv("DB_NAME"))
+	logrus.Infoln("DB_PORT:", os.Getenv("DB_PORT"))
+
+	logrus.Infoln("DB_PASSWORD: [HIDDEN]")
 }
