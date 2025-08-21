@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/doguhanniltextra/property_go/internal/model"
+	"github.com/doguhanniltextra/property_go/middleware"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,6 +27,8 @@ func RegisterService(db *sql.DB, givenUser *model.User) (sql.Result, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	middleware.CreateToken(givenUser)
 
 	logrus.Info("Register Service is completed.")
 
