@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/doguhanniltextra/property_go/database"
+	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
@@ -15,6 +16,10 @@ type DatabaseC struct {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		logrus.Fatal("Error loading .env file")
+	}
 	loggerInit()
 	databaseVariables()
 
