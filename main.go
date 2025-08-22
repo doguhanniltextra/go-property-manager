@@ -1,19 +1,14 @@
 package main
 
 import (
-	"database/sql"
-
 	"github.com/doguhanniltextra/property_go/database"
+	"github.com/doguhanniltextra/property_go/internal/router"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 
 	"os"
 )
-
-type DatabaseC struct {
-	DB *sql.DB
-}
 
 func main() {
 	err := godotenv.Load()
@@ -27,6 +22,8 @@ func main() {
 	if err != nil {
 		logrus.Infoln("Database connection failed: ", err)
 	}
+
+	router.Router(db)
 
 	defer db.Close()
 }
