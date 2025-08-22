@@ -3,36 +3,36 @@ package service
 import (
 	"database/sql"
 
+	"github.com/doguhanniltextra/property_go/internal/middleware"
 	"github.com/doguhanniltextra/property_go/internal/model"
-	"github.com/doguhanniltextra/property_go/middleware"
 	"github.com/sirupsen/logrus"
 )
 
-func RegisterService(db *sql.DB, givenUser *model.User) (sql.Result, error) {
+func RegisterService(db *sql.DB, givenUser *model.User) (string, error) {
 
 	logrus.Info("Register Service Starting")
 
-	result, err := db.Exec(`
-        INSERT INTO users (name, email, password)
-         VALUES ($1, $2, $3)
-    `, givenUser.Name, givenUser.Email, givenUser.Password)
+	var id int
+	err := db.QueryRow(`
+        INSERT INTO users(name,email,password) 
+        VALUES($1,$2,$3) RETURNING id
+    `, givenUser.Name, givenUser.Email, givenUser.Password).Scan(&id)
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		logrus.Error("Failed to get rows affected: ", err)
-	} else {
-		logrus.Infof("Inserted user, %d row(s) affected", rowsAffected)
-	}
+	givenUser.ID = id
 
 	if err != nil {
-		return nil, err
+		return "", nil
 	}
 
-	middleware.CreateToken(givenUser)
+	createdToken, err := middleware.CreateToken(givenUser)
+	if err != nil {
+		logrus.Info("Create Token didn't work.")
+		return "", nil
+	}
 
 	logrus.Info("Register Service is completed.")
 
-	return result, nil
+	return createdToken, nil
 }
 
 func AuthService(db *sql.DB, authRequest *model.AuthRequest) (bool, error) {
@@ -52,4 +52,15 @@ func AuthService(db *sql.DB, authRequest *model.AuthRequest) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func GetAllUsers(db *sql.DB) (*sql.Rows, error) {
+	rows, err := db.Query(`
+		SELECT id, name, email, password FROM users
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	return rows, nil
 }
